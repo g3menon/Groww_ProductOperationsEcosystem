@@ -1,4 +1,4 @@
-"""CLI entrypoint for eval suites (`python -m app.evals.run_all --phase 1`)."""
+"""CLI entrypoint for eval suites (`python -m app.evals.run_all --phase 1` or `--all`)."""
 
 from __future__ import annotations
 
@@ -41,51 +41,95 @@ def _persist_deliverable(phase: int, report) -> Path:
     return out_path
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run automated eval suites.")
-    parser.add_argument("--phase", type=int, default=1, help="Phase number (default: 1).")
-    args = parser.parse_args(argv)
+def _invoke_phase(phase: int) -> tuple[int, Path]:
+    """Run one phase; returns (exit_code, deliverable_path)."""
+    if phase == 1:
+        from app.evals.phase1_checks import run_phase1_evals
 
-    if args.phase not in (1, 2, 3, 4, 5):
-        print("Only phase 1, 2, 3, 4, and 5 evals are available.", file=sys.stderr)
-        return 2
+        report = run_phase1_evals()
+    elif phase == 2:
+        from app.evals.pulse_checks import run_phase2_evals
 
-    _ensure_eval_env()
+        report = run_phase2_evals()
+    elif phase == 3:
+        from app.evals.phase3_checks import run_phase3_evals
 
-    # Stable offline run: avoid real network calls for Supabase fixtures.
-    with patch(
-        "app.integrations.supabase.client.check_supabase_connectivity",
-        new=AsyncMock(return_value=(True, "ok")),
-    ):
-        if args.phase == 1:
-            from app.evals.phase1_checks import run_phase1_evals
+        report = run_phase3_evals()
+    elif phase == 4:
+        from app.evals.phase4_checks import run_phase4_evals
 
-            report = run_phase1_evals()
-        elif args.phase == 2:
-            from app.evals.pulse_checks import run_phase2_evals
+        report = run_phase4_evals()
+    elif phase == 5:
+        from app.evals.phase5_checks import run_phase5_evals
 
-            report = run_phase2_evals()
-        elif args.phase == 3:
-            from app.evals.phase3_checks import run_phase3_evals
+        report = run_phase5_evals()
+    elif phase == 6:
+        from app.evals.phase6_checks import run_phase6_evals
 
-            report = run_phase3_evals()
-        elif args.phase == 4:
-            from app.evals.phase4_checks import run_phase4_evals
+        report = run_phase6_evals()
+    elif phase == 7:
+        from app.evals.phase7_checks import run_phase7_evals
 
-            report = run_phase4_evals()
-        else:
-            from app.evals.phase5_checks import run_phase5_evals
+        report = run_phase7_evals()
+    elif phase == 8:
+        from app.evals.phase8_checks import run_phase8_evals
 
-            report = run_phase5_evals()
+        report = run_phase8_evals()
+    elif phase == 9:
+        from app.evals.phase9_checks import run_phase9_evals
 
-    out_path = _persist_deliverable(args.phase, report)
+        report = run_phase9_evals()
+    else:
+        raise ValueError(f"unsupported phase {phase}")
+
+    out_path = _persist_deliverable(phase, report)
     print(report.model_dump_json(indent=2))
     print(f"\nSaved deliverable: {out_path}")
     if report.score < 85.0:
         print(f"\nFAIL: score {report.score}% is below 85%.", file=sys.stderr)
-        return 1
+        return 1, out_path
     print(f"\nPASS: score {report.score}% (threshold 85%).")
-    return 0
+    return 0, out_path
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Run automated eval suites.")
+    parser.add_argument("--phase", type=int, default=None, help="Phase number 1–9.")
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Run phases 1 through 9 sequentially (fail-fast on first sub-threshold score).",
+    )
+    args = parser.parse_args(argv)
+
+    if args.all:
+        phases = list(range(1, 10))
+    elif args.phase is not None:
+        phases = [args.phase]
+    else:
+        phases = [1]
+
+    bad = [p for p in phases if p not in range(1, 10)]
+    if bad:
+        print(f"Invalid phase(s): {bad}. Use 1–9 or --all.", file=sys.stderr)
+        return 2
+
+    _ensure_eval_env()
+
+    worst = 0
+    # Stable offline run for phases that touch FastAPI + Supabase startup helpers.
+    with patch(
+        "app.integrations.supabase.client.check_supabase_connectivity",
+        new=AsyncMock(return_value=(True, "ok")),
+    ):
+        for phase in phases:
+            print(f"\n========== Phase {phase} ==========", file=sys.stderr)
+            code, _ = _invoke_phase(phase)
+            worst = max(worst, code)
+            if code != 0:
+                break
+
+    return worst
 
 
 if __name__ == "__main__":

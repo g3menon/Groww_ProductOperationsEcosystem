@@ -1,0 +1,39 @@
+{
+  "version": "phase7-v1",
+  "total_weight": 100.0,
+  "earned_weight": 100.0,
+  "score": 100.0,
+  "checks": [
+    {
+      "id": "openapi_internal_scheduler_pulse",
+      "weight": 22.0,
+      "passed": true
+    },
+    {
+      "id": "scheduler_pulse_refuses_without_valid_secret",
+      "weight": 22.0,
+      "passed": true
+    },
+    {
+      "id": "import_gmail_service",
+      "weight": 18.0,
+      "passed": true
+    },
+    {
+      "id": "import_calendar_service",
+      "weight": 18.0,
+      "passed": true
+    },
+    {
+      "id": "import_sheets_service",
+      "weight": 10.0,
+      "passed": true
+    },
+    {
+      "id": "mcp_run_approval_integrations_export",
+      "weight": 10.0,
+      "passed": true
+    }
+  ],
+  "generated_at": "2026-05-07T14:19:42.870393+00:00"
+}

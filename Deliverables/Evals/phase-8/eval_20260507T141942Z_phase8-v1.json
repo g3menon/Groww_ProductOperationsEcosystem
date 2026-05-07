@@ -1,0 +1,29 @@
+{
+  "version": "phase8-v1",
+  "total_weight": 100.0,
+  "earned_weight": 100.0,
+  "score": 100.0,
+  "checks": [
+    {
+      "id": "openapi_voice_paths",
+      "weight": 40.0,
+      "passed": true
+    },
+    {
+      "id": "voice_root_returns_marker",
+      "weight": 30.0,
+      "passed": true
+    },
+    {
+      "id": "voice_message_missing_upload_safe",
+      "weight": 15.0,
+      "passed": true
+    },
+    {
+      "id": "voice_adapter_service_import",
+      "weight": 15.0,
+      "passed": true
+    }
+  ],
+  "generated_at": "2026-05-07T14:19:42.919038+00:00"
+}

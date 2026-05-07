@@ -1,0 +1,34 @@
+{
+  "version": "phase9-v1",
+  "total_weight": 100.0,
+  "earned_weight": 100.0,
+  "score": 100.0,
+  "checks": [
+    {
+      "id": "dockerfile_present",
+      "weight": 25.0,
+      "passed": true
+    },
+    {
+      "id": "railway_toml_present",
+      "weight": 25.0,
+      "passed": true
+    },
+    {
+      "id": "weekly_pulse_github_workflow_present",
+      "weight": 25.0,
+      "passed": true
+    },
+    {
+      "id": "supabase_phase1_phase2_schema_present",
+      "weight": 15.0,
+      "passed": true
+    },
+    {
+      "id": "frontend_package_present",
+      "weight": 10.0,
+      "passed": true
+    }
+  ],
+  "generated_at": "2026-05-07T14:19:42.926455+00:00"
+}

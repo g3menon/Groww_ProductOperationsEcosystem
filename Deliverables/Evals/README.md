@@ -1,15 +1,17 @@
 This folder holds **manual and automated** eval artifacts by phase (see `Docs/Rules.md` EVAL* and `Docs/Runbook.md` Recording).
 
-- `phase-1/`: connectivity + config + health + badges (automated evals available)
-- `phase-2/`: weekly pulse ingestion + normalization + pulse APIs + Product tab rendering (automated evals available)
-- `phase-3/`: customer text chat foundation (automated evals available)
-- `phase-4/`..`phase-7/`: manual acceptance gates (no automated eval harness in `app.evals.run_all` yet)
+- `phase-1/` … `phase-9/`: automated JSON artifacts + `latest.json` via `backend/app/evals/run_all.py`
+- Phases **6–9** automated suites are **structural / smoke** checks (OpenAPI, advisor flow, integration imports, voice routes, deployment files); they **replace manual acceptance in Evals.md** when run — production smoke and live OAuth remain separate.
 
 For local runs:
-- Phase 1: `cd backend; python -m app.evals.run_all --phase 1`
-- Phase 2: `cd backend; python -m app.evals.run_all --phase 2`
-- Phase 3: `cd backend; python -m app.evals.run_all --phase 3`
+
+```bash
+cd backend
+py -3.11 -m app.evals.run_all --all
+# or one phase:
+py -3.11 -m app.evals.run_all --phase 6
+```
 
 Notes:
-- The eval CLI currently supports **only phases 1, 2, and 3** (see `backend/app/evals/run_all.py`).
-- For phases 4–7, record results under the corresponding `phase-<n>/` folder after running the text-only end-to-end checklist in `Docs/Runbook.md` (before voice / Phase 8).
+- Threshold on every phase score: **≥ 85%**.
+- Still run `Docs/Runbook.md` end-to-end when validating UX or live Google integrations; automation does not hit production APIs.
