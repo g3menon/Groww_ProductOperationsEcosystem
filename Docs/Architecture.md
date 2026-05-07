@@ -47,16 +47,16 @@ The dashboard should support:
 - **No Google service account**
 - Gmail actions for weekly pulse and for confirmation emails use **Google OAuth**
 - Google Calendar actions use **Google OAuth**
-- Google Sheets access, if needed, also uses **Google OAuth**
+- Google Sheets access, if needed, also uses **Google OAuth [https://docs.google.com/spreadsheets/d/1EQe6JVH6RfPnLgf3vvdLycYx0xtmippKMya1UA7rVow/edit?usp=sharing](https://docs.google.com/spreadsheets/d/1EQe6JVH6RfPnLgf3vvdLycYx0xtmippKMya1UA7rVow/edit?usp=sharing)**
 - Scheduler: **GitHub Actions**
 - LLM split:
   - **Groq** for token-heavy preprocessing / cleanup
-  - **Gemini** for synthesis / final answer generation, using **`gemini-2.5-flash`** as the default generation model unless overridden by config (see environment variables).
+  - **Gemini** for synthesis / final answer generation, using `**gemini-2.5-flash`** as the default generation model unless overridden by config (see environment variables).
 - **Provider resilience:** configure a **primary** and **fallback** API key for both Gemini and Groq. The backend **must** automatically switch to the configured fallback when the primary returns rate-limit / quota / billing-related errors (or other key-specific failures), and must log which key tier was used—without printing secret values.
 - MCP is **lightweight**, used only for governed external actions
 - Business logic lives in **FastAPI**, not in the frontend
 - Google Sheets is **not** a source of truth; it is only a downstream operational/export surface if needed
-- **Canonical URLs and scraping rules** (Groww Play Store, MF fund pages, fee fields, reference UI links) live in **`Deliverables/Resources.md`**; implementation docs must not duplicate divergent URL lists.
+- **Canonical URLs and scraping rules** (Groww Play Store, MF fund pages, fee fields, reference UI links) live in `**Deliverables/Resources.md`**; implementation docs must not duplicate divergent URL lists.
 
 ---
 
@@ -335,7 +335,7 @@ Use LLMs only where they add meaningful product value.
 
 ### API keys, quotas, and fallbacks
 
-- Store **`GEMINI_API_KEY`** (primary) and **`GEMINI_API_KEY_FALLBACK`**; store **`GROQ_API_KEY`** (primary) and **`GROQ_API_KEY_FALLBACK`**.
+- Store `**GEMINI_API_KEY`** (primary) and `**GEMINI_API_KEY_FALLBACK**`; store `**GROQ_API_KEY**` (primary) and `**GROQ_API_KEY_FALLBACK**`.
 - On **429**, **resource exhausted**, **quota**, or **billing** errors from the primary key—or when the application detects **token budget exhaustion** for a given call—**retry the same logical request once** using the **fallback** key for that provider before surfacing a user-visible failure.
 - If **both** keys fail for a provider, degrade gracefully (cached pulse, safe chat fallback, or explicit “try again later”) and log structured error metadata **without** logging key material.
 - Record in observability which **tier** (primary vs fallback) succeeded for post-incident analysis.
@@ -737,12 +737,12 @@ Generate a PM-facing pulse summarizing review or issue trends, and optionally se
 
 The compact canonical pipeline order is also in `Deliverables/Resources.md` (**Weekly Pulse from Play Store (order)**); the full step-by-step semantics live here. After **raw** data is gathered (Playwright Play Store job and/or other issue inputs), the following steps are **all required** in order before a stored Weekly Pulse is considered valid for PM surfaces (skipping a step is a defect unless an explicit, documented degraded mode is in use):
 
-1. **Persist raw** — append-only or versioned raw payloads for replay and debugging.  
-2. **Cleaning** — strip HTML/markup and boilerplate, normalize encoding and whitespace, remove non-text noise so downstream steps see plain review text.  
-3. **Normalization** — schema mapping to internal review rows, dedupe, language and length policy, spam/low-signal filtering, helpfulness/rating balance rules, PII minimization (see `Docs/Rules.md` Phase 2).  
-4. **Optional chunking / segmentation** — only when needed for very long reviews or batched inputs (pulse preprocessing; not the MF RAG chunk index).  
-5. **Theme generation** — Groq-backed preprocessing, clustering / theme extraction, and candidate quote selection from **normalized** text only.  
-6. **Pulse generation** — Gemini (**`gemini-2.5-flash`**) synthesis: final narrative, actions, and structured pulse payload; validate against schema before persist.  
+1. **Persist raw** — append-only or versioned raw payloads for replay and debugging.
+2. **Cleaning** — strip HTML/markup and boilerplate, normalize encoding and whitespace, remove non-text noise so downstream steps see plain review text.
+3. **Normalization** — schema mapping to internal review rows, dedupe, language and length policy, spam/low-signal filtering, helpfulness/rating balance rules, PII minimization (see `Docs/Rules.md` Phase 2).
+4. **Optional chunking / segmentation** — only when needed for very long reviews or batched inputs (pulse preprocessing; not the MF RAG chunk index).
+5. **Theme generation** — Groq-backed preprocessing, clustering / theme extraction, and candidate quote selection from **normalized** text only.
+6. **Pulse generation** — Gemini (`**gemini-2.5-flash`**) synthesis: final narrative, actions, and structured pulse payload; validate against schema before persist.
 7. **Store and render** — write `weekly_pulses` (or equivalent), then Product tab and APIs read that record.
 
 ```text
@@ -1238,6 +1238,7 @@ project-root/
 ```
 
 *Notes:*
+
 - *The deployment artifacts at the repo root (`Dockerfile`, `railway.toml`) describe the **Railway** backend deployment. A legacy `backend/render.yaml` may still exist from earlier iterations but is **not** the active deploy config.*
 - *Architecture-level decisions live in this file (`Docs/Architecture.md`); keep any other architecture-style copy elsewhere derived from this document.*
 
@@ -1294,7 +1295,7 @@ DEFAULT_TIMEZONE=Asia/Kolkata
 
 ### Env rules
 
-- `GEMINI_MODEL` defaults to **`gemini-2.5-flash`**; change only with explicit compatibility testing.
+- `GEMINI_MODEL` defaults to `**gemini-2.5-flash**`; change only with explicit compatibility testing.
 - `GEMINI_API_KEY_FALLBACK` and `GROQ_API_KEY_FALLBACK` are backend-only; the runtime **must** use them when primary keys hit quota or token limits as described in **API keys, quotas, and fallbacks** under LLM task split.
 - `SUPABASE_SERVICE_ROLE_KEY` is backend-only
 - `GOOGLE_CLIENT_SECRET` is backend-only
@@ -1314,8 +1315,8 @@ After each phase (Phase 1 through Phase 8), the team must complete this gate **b
 1. Run implementation tests for the completed phase.
 2. Fix any runtime, integration, or validation errors found.
 3. Run phase-specific evals for the completed phase.
-   - **Automated evals** are available today for **phases 1, 2, and 3** via `cd backend; python -m app.evals.run_all --phase <n>` (see `backend/app/evals/run_all.py`).
-   - **Phases 4–7** use the **manual acceptance gate** in `Docs/Runbook.md` → *End-to-end test (text-only, before voice / Phase 8)* and the per-phase READMEs under `Deliverables/Evals/phase-<n>/` until automated harnesses are added.
+  - **Automated evals** are available today for **phases 1, 2, and 3** via `cd backend; python -m app.evals.run_all --phase <n>` (see `backend/app/evals/run_all.py`).
+  - **Phases 4–7** use the **manual acceptance gate** in `Docs/Runbook.md` → *End-to-end test (text-only, before voice / Phase 8)* and the per-phase READMEs under `Deliverables/Evals/phase-<n>/` until automated harnesses are added.
 4. Record the phase score (or, for manual gates, the per-phase artifact in `Deliverables/Evals/phase-<n>/`).
 5. If the automated score is **below 85%**, make changes and re-run tests/evals until score is **at least 85%**. For manual gates, the phase is closed only when its Definition of Done in `Docs/Rules.md` is satisfied and recorded.
 6. Only then proceed to the next phase.
@@ -1413,7 +1414,7 @@ Phases **1 through 7** are the **complete functional product** for validation: d
 
 - **STT/TTS (Phase 8)** is **additive**: it must not be a prerequisite to run end-to-end tests of Phases 1–7.  
 - Acceptance: every workflow in `Docs/UserFlow.md` must be exercisable using **typed text and UI actions** alone (plus normal HTTP APIs), with the same backend state transitions as the future voice path.  
-- Use **`Docs/Runbook.md` → End-to-end test (text-only, before voice)** as the authoritative checklist before enabling voice in production.
+- Use `**Docs/Runbook.md` → End-to-end test (text-only, before voice)** as the authoritative checklist before enabling voice in production.
 
 ---
 
@@ -1423,7 +1424,7 @@ Phases **1 through 7** are the **complete functional product** for validation: d
 - after each phase, run tests, fix errors and run evals before phase transition
 - fix all discovered errors before phase transition
 - enforce minimum eval score of 85% before moving to next phase
-- store per-phase eval outputs under `Deliverables/Evals/phase-*`
+- store per-phase eval outputs under `Deliverables/Evals/phase-`*
 - do not create a different repo structure per phase
 - do not split into separate repos
 - do not move business logic into frontend
@@ -1464,3 +1465,4 @@ The project is considered complete when:
 - Google Sheets, if used, is only a downstream export
 - the app is deployable on Vercel (frontend) + Railway (backend) with Supabase Postgres
 - architecture remains modular and debuggable
+
