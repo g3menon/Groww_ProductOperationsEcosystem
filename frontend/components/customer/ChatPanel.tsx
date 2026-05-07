@@ -26,6 +26,8 @@ export type ChatMessage = {
 interface ChatPanelProps {
   messages: ChatMessage[];
   isSending?: boolean;
+  /** Keeps parent booking summaries in sync when a booking card is cancelled inside chat history. */
+  onBookingUpdated?: (next: BookingSummary) => void;
 }
 
 const BOOKING_ID_PATTERN = /\bBK-\d{8}-[A-Z0-9]{4,}\b/i;
@@ -58,7 +60,7 @@ function inferredBooking(content: string): BookingSummary | null {
   return match ? { booking_id: match[0], status: "pending_advisor_approval" } : null;
 }
 
-export function ChatPanel({ messages, isSending = false }: ChatPanelProps) {
+export function ChatPanel({ messages, isSending = false, onBookingUpdated }: ChatPanelProps) {
   const endRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -85,7 +87,7 @@ export function ChatPanel({ messages, isSending = false }: ChatPanelProps) {
               <p className={isUser ? "mt-1 text-right text-[11px] text-groww-faint" : "mt-1 text-[11px] text-groww-faint"}>
                 {formatShortIso(message.created_at)}
               </p>
-              {!isUser && booking ? <BookingCard booking={booking} /> : null}
+              {!isUser && booking ? <BookingCard booking={booking} onBookingUpdated={onBookingUpdated} /> : null}
               {!isUser && message.citations && message.citations.length > 0 ? (
                 <div className="mt-2 space-y-1" aria-label="Sources">
                   <p className="px-1 text-[10px] font-semibold uppercase tracking-wide text-groww-faint">Sources</p>

@@ -34,7 +34,7 @@ export const FALLBACK_PROMPTS: PromptChip[] = [
   {
     id: "fallback-cancel",
     label: "Cancel booking",
-    prompt: "Cancel my booking using booking ID",
+    prompt: "Cancel my booking",
   },
 ];
 

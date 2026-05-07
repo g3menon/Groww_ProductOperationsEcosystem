@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BookingCard, type BookingSummary } from "@/components/customer/BookingCard";
 import { ChatPanel, type ChatMessage } from "@/components/customer/ChatPanel";
+import { CustomerMessageComposer } from "@/components/customer/CustomerMessageComposer";
 import { FALLBACK_PROMPTS, PromptChips, type PromptChip } from "@/components/customer/PromptChips";
-import { SendIcon } from "@/components/customer/SendIcon";
-import { VoiceControls } from "@/components/customer/VoiceControls";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { loadChatSessionIndex, upsertChatSessionFromMessages, type ChatSessionSummary } from "@/lib/chat-sessions-storage";
 import { fetchJson, type ApiEnvelope } from "@/lib/api-client";
+import { isBookingCancellable } from "@/lib/booking-status";
 import { BOOKING_REASONS, CURATED_CUSTOMER_PROMPTS, SUPPORTED_FUNDS, type BookingReason } from "@/lib/customer-config";
 import { isFundComparisonPrompt } from "@/lib/fund-comparison-guard";
 import { formatShortIso } from "@/lib/formatters";
@@ -66,6 +66,11 @@ type SpeechRecognitionEventLike = {
 
 const STORAGE_KEY = "groww_customer_chat_session_id_v1";
 const BOOKING_ID_PATTERN = /\bBK-\d{8}-[A-Z0-9]{4,}\b/i;
+
+function looksLikeCancelIntent(text: string): boolean {
+  const t = text.toLowerCase().trim();
+  return /\bcancel\b/.test(t) || /\bcancellation\b/.test(t) || t.includes("call off my booking");
+}
 
 function localId(prefix: string) {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${prefix}-${crypto.randomUUID()}`;
@@ -133,10 +138,25 @@ export function CustomerTab() {
   const [contact, setContact] = useState<ContactDetails>({ name: "", email: "" });
   const [bookingBusy, setBookingBusy] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
+  const [cancelShortcutBusy, setCancelShortcutBusy] = useState(false);
   const [lastBooking, setLastBooking] = useState<BookingDetail | null>(null);
   const [pastSessions, setPastSessions] = useState<ChatSessionSummary[]>([]);
 
   const availableSlots = useMemo(() => buildSlots(), []);
+
+  const closeBookingPanel = useCallback(() => {
+    setBookingOpen(false);
+    setSelectedReason(null);
+    setSelectedSlot(null);
+    setContact({ name: "", email: "" });
+    setBookingError(null);
+  }, []);
+
+  const bookingStepBack = useCallback(() => {
+    if (selectedSlot) setSelectedSlot(null);
+    else if (selectedReason) setSelectedReason(null);
+    else closeBookingPanel();
+  }, [closeBookingPanel, selectedReason, selectedSlot]);
 
   const loadHistory = useCallback(async (sid: string) => {
     setLoadingHistory(true);
@@ -157,13 +177,13 @@ export function CustomerTab() {
   const switchSession = useCallback(
     async (id: string) => {
       if (id === sessionId || sending) return;
-      setBookingOpen(false);
+      closeBookingPanel();
       window.localStorage.setItem(STORAGE_KEY, id);
       setSessionId(id);
       await loadHistory(id);
       refreshPastSessions();
     },
-    [sessionId, sending, loadHistory, refreshPastSessions],
+    [sessionId, sending, loadHistory, refreshPastSessions, closeBookingPanel],
   );
 
   useEffect(() => {
@@ -217,7 +237,10 @@ export function CustomerTab() {
     };
   }, []);
 
-  const canSend = useMemo(() => input.trim().length > 0 && !sending, [input, sending]);
+  const canSend = useMemo(
+    () => input.trim().length > 0 && !sending && !cancelShortcutBusy,
+    [cancelShortcutBusy, input, sending],
+  );
 
   const clearChat = useCallback(() => {
     window.localStorage.removeItem(STORAGE_KEY);
@@ -226,9 +249,10 @@ export function CustomerTab() {
     setInput("");
     setSendError(null);
     setLastBooking(null);
-    setBookingOpen(false);
+    setCancelShortcutBusy(false);
+    closeBookingPanel();
     refreshPastSessions();
-  }, [refreshPastSessions]);
+  }, [closeBookingPanel, refreshPastSessions]);
 
   const appendAssistant = useCallback((content: string, booking?: BookingSummary) => {
     setMessages((current) => [
@@ -246,22 +270,84 @@ export function CustomerTab() {
 
   const cancelBookingFromMessage = useCallback(
     async (text: string) => {
-      const bookingId = text.match(BOOKING_ID_PATTERN)?.[0];
-      if (!bookingId || !text.toLowerCase().includes("cancel")) return false;
-      const response = await fetchJson<BookingDetail>("/api/v1/booking/cancel", {
-        method: "POST",
-        body: JSON.stringify({ booking_id: bookingId, reason: "Customer requested cancellation from chat." }),
-      });
-      appendAssistant(
-        response.data?.status === "cancelled"
-          ? `I cancelled booking ${bookingId}.`
-          : `I found booking ${bookingId}, but it could not be cancelled from its current status.`,
-      );
-      return true;
+      const cancelIntent = looksLikeCancelIntent(text);
+      const idFromPattern = text.match(BOOKING_ID_PATTERN)?.[0];
+      const bookingId =
+        idFromPattern ??
+        (cancelIntent && lastBooking && isBookingCancellable(lastBooking.status) ? lastBooking.booking_id : null);
+      if (!bookingId || !cancelIntent) return false;
+
+      try {
+        const response = await fetchJson<BookingDetail>("/api/v1/booking/cancel", {
+          method: "POST",
+          body: JSON.stringify({ booking_id: bookingId, reason: "Customer requested cancellation from chat." }),
+        });
+        const ok = response.data?.status === "cancelled";
+        appendAssistant(
+          ok
+            ? `I cancelled booking ${bookingId}.`
+            : `I found booking ${bookingId}, but it could not be cancelled from its current status.`,
+        );
+        if (response.data?.booking_id && lastBooking?.booking_id === bookingId) {
+          setLastBooking((prev) =>
+            prev && prev.booking_id === bookingId
+              ? { ...prev, ...response.data!, booking_reason: prev.booking_reason }
+              : prev,
+          );
+        }
+        return true;
+      } catch (e) {
+        appendAssistant(
+          e instanceof Error ? e.message : "Cancellation failed. Try again or use the Cancel booking button on your booking card.",
+        );
+        return true;
+      }
     },
-    [appendAssistant],
+    [appendAssistant, lastBooking],
   );
 
+  const cancelLatestBooking = useCallback(async () => {
+    if (!lastBooking?.booking_id || !isBookingCancellable(lastBooking.status)) return;
+    setCancelShortcutBusy(true);
+    try {
+      const response = await fetchJson<BookingDetail>("/api/v1/booking/cancel", {
+        method: "POST",
+        body: JSON.stringify({
+          booking_id: lastBooking.booking_id,
+          reason: "Customer cancelled via quick action.",
+        }),
+      });
+      const ok = response.data?.status === "cancelled";
+      appendAssistant(
+        ok
+          ? `I cancelled booking ${lastBooking.booking_id}.`
+          : `Booking ${lastBooking.booking_id} could not be cancelled from its current status.`,
+      );
+      if (response.data?.booking_id) {
+        setLastBooking((prev) =>
+          prev && prev.booking_id === lastBooking.booking_id
+            ? { ...prev, ...response.data!, booking_reason: prev.booking_reason }
+            : prev,
+        );
+      }
+    } catch (e) {
+      appendAssistant(e instanceof Error ? e.message : "Cancellation failed.");
+    } finally {
+      setCancelShortcutBusy(false);
+    }
+  }, [appendAssistant, lastBooking]);
+
+  const composerQuickActions = useMemo(() => {
+    if (!lastBooking || !isBookingCancellable(lastBooking.status)) return [];
+    return [
+      {
+        id: "cancel-latest",
+        label: "Cancel this booking",
+        onClick: () => void cancelLatestBooking(),
+        disabled: cancelShortcutBusy,
+      },
+    ];
+  }, [cancelLatestBooking, cancelShortcutBusy, lastBooking]);
   const sendMessage = useCallback(
     async (rawText: string) => {
       const text = rawText.trim();
@@ -499,7 +585,7 @@ export function CustomerTab() {
                     <button
                       key={row.id}
                       type="button"
-                      disabled={sending || bookingBusy}
+                      disabled={sending || bookingBusy || cancelShortcutBusy}
                       onClick={() => void switchSession(row.id)}
                       className={
                         active
@@ -526,7 +612,7 @@ export function CustomerTab() {
                 type="button"
                 className="focus-ring rounded-full border border-groww-border bg-white px-3 py-2 text-xs font-semibold text-groww-muted hover:text-groww-accent disabled:opacity-50"
                 onClick={clearChat}
-                disabled={sending || bookingBusy}
+                disabled={sending || bookingBusy || cancelShortcutBusy}
               >
                 New chat
               </button>
@@ -543,80 +629,44 @@ export function CustomerTab() {
                   Start with a suggestion above or type a question below.
                 </div>
               ) : (
-                <ChatPanel messages={messages} isSending={sending} />
+                <ChatPanel
+                  messages={messages}
+                  isSending={sending}
+                  onBookingUpdated={(next) =>
+                    setLastBooking((prev) =>
+                      prev?.booking_id === next.booking_id
+                        ? { ...prev, ...next, booking_reason: prev.booking_reason ?? next.booking_reason }
+                        : prev,
+                    )
+                  }
+                />
               )}
             </div>
 
-            <div className="border-t border-groww-border pt-4">
-              <div className="mb-3 flex flex-wrap gap-2">
-                {chips
-                  .filter((c) => !isFundComparisonPrompt(c.prompt))
-                  .slice(0, 6)
-                  .map((chip) => (
-                    <button
-                      key={chip.id}
-                      type="button"
-                      className="pill-chip"
-                      onClick={() => void sendMessage(chip.prompt)}
-                      disabled={sending}
-                    >
-                      {chip.label}
-                    </button>
-                  ))}
-              </div>
-              <label htmlFor="customer-composer" className="sr-only">
-                Ask Groww AI
-              </label>
-              <div
-                className={
-                  voiceActive
-                    ? "rounded-2xl border border-groww-accent bg-white p-3 shadow-card"
-                    : "rounded-2xl border border-groww-border bg-white p-3 shadow-sm"
+            <div>
+              <CustomerMessageComposer
+                chips={chips}
+                sending={sending || cancelShortcutBusy}
+                onChipSend={(prompt) => void sendMessage(prompt)}
+                onBookAdvisor={() => startBooking()}
+                quickActions={composerQuickActions}
+                input={input}
+                voiceInterim={voiceInterim}
+                onInputChange={setInput}
+                onSendText={() => void sendMessage(input)}
+                canSend={canSend}
+                voiceActive={voiceActive}
+                voiceUnsupported={voiceUnsupported}
+                voiceError={voiceError}
+                onVoiceToggle={toggleVoice}
+                voiceExtensionSlot={
+                  voiceActive ? (
+                    <span className="text-xs font-semibold text-groww-accent whitespace-nowrap">Listening · edit anytime</span>
+                  ) : voiceUnsupported ? (
+                    <span className="max-w-[140px] text-[11px] text-groww-faint">Mic unavailable in this browser</span>
+                  ) : null
                 }
-              >
-                <textarea
-                  id="customer-composer"
-                  value={voiceInterim ? `${input}${input.trim() ? " " : ""}${voiceInterim}` : input}
-                  onChange={(event) => setInput(event.target.value)}
-                  placeholder="Ask about NAV, fees, mutual fund basics, or booking an advisor..."
-                  className="min-h-[88px] w-full resize-none bg-transparent px-2 py-2 text-sm leading-6 text-groww-text placeholder:text-groww-faint focus:outline-none"
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" && !event.shiftKey) {
-                      event.preventDefault();
-                      if (canSend) void sendMessage(input);
-                    }
-                  }}
-                />
-                <div className="flex items-center justify-between gap-3 border-t border-groww-border pt-3">
-                  <div className="flex items-center gap-2">
-                    <VoiceControls active={voiceActive} unsupported={voiceUnsupported} onToggle={toggleVoice} />
-                    {voiceActive ? <span className="text-xs font-semibold text-groww-accent">Listening continuously</span> : null}
-                    {voiceUnsupported ? <span className="text-xs text-groww-faint">Voice unavailable</span> : null}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button type="button" className="pill-chip" onClick={() => startBooking()} disabled={sending}>
-                      Book advisor
-                    </button>
-                    <button
-                      type="button"
-                      className="focus-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-groww-accent text-white shadow-card transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
-                      onClick={() => void sendMessage(input)}
-                      disabled={!canSend}
-                      aria-label="Send message"
-                    >
-                      {sending ? (
-                        <span className="text-xs font-semibold" aria-hidden>
-                          …
-                        </span>
-                      ) : (
-                        <SendIcon className="h-5 w-5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {voiceError ? <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-700">{voiceError}</p> : null}
+              />
               {sendError ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{sendError}</p> : null}
             </div>
           </div>
@@ -628,6 +678,9 @@ export function CustomerTab() {
           <div className="flex flex-col gap-1 border-b border-groww-border pb-4">
             <h3 className="text-lg font-semibold text-groww-text">Book an advisor</h3>
             <p className="text-sm text-groww-muted">Choose a reason, pick one of two slots, then share contact details.</p>
+            <p className="mt-2 rounded-xl bg-groww-surfaceSoft/60 px-3 py-2 text-xs leading-relaxed text-groww-muted">
+              Tap an option below or keep chatting — prompts, typing, and voice all stay available in the conversation panel at the same time.
+            </p>
           </div>
 
           <div className="mt-5">
@@ -649,6 +702,17 @@ export function CustomerTab() {
                 </button>
               ))}
             </div>
+            {!selectedReason ? (
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  className="focus-ring rounded-full border border-groww-border bg-white px-4 py-2 text-xs font-semibold text-groww-muted shadow-sm hover:text-groww-accent"
+                  onClick={closeBookingPanel}
+                >
+                  Exit
+                </button>
+              </div>
+            ) : null}
           </div>
 
           {selectedReason ? (
@@ -671,6 +735,24 @@ export function CustomerTab() {
                   </button>
                 ))}
               </div>
+              {!selectedSlot ? (
+                <div className="mt-4 flex flex-wrap justify-between gap-2">
+                  <button
+                    type="button"
+                    className="focus-ring rounded-full border border-groww-border bg-white px-4 py-2 text-xs font-semibold text-groww-muted shadow-sm hover:text-groww-accent"
+                    onClick={bookingStepBack}
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    className="focus-ring rounded-full border border-groww-border bg-white px-4 py-2 text-xs font-semibold text-groww-muted shadow-sm hover:text-groww-accent"
+                    onClick={closeBookingPanel}
+                  >
+                    Exit
+                  </button>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
@@ -695,10 +777,17 @@ export function CustomerTab() {
               <div className="mt-4 flex flex-wrap justify-end gap-2">
                 <button
                   type="button"
-                  className="focus-ring rounded-full border border-groww-border bg-white px-4 py-2 text-xs font-semibold text-groww-muted"
-                  onClick={() => setBookingOpen(false)}
+                  className="focus-ring rounded-full border border-groww-border bg-white px-4 py-2 text-xs font-semibold text-groww-muted shadow-sm hover:text-groww-accent"
+                  onClick={bookingStepBack}
                 >
-                  Close
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className="focus-ring rounded-full border border-groww-border bg-white px-4 py-2 text-xs font-semibold text-groww-muted shadow-sm hover:text-groww-accent"
+                  onClick={closeBookingPanel}
+                >
+                  Exit
                 </button>
                 <button
                   type="button"
@@ -727,7 +816,7 @@ export function CustomerTab() {
 
       {lastBooking ? (
         <div className="mx-auto max-w-2xl">
-          <BookingCard booking={lastBooking} />
+          <BookingCard booking={lastBooking} onBookingUpdated={setLastBooking} />
         </div>
       ) : null}
     </div>
