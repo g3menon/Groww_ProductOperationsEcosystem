@@ -479,6 +479,8 @@ export function CustomerTab() {
         .slice(-6)
         .map((message) => `${message.role}: ${message.content}`)
         .join(" | ");
+      const rawSummary = `${selectedReason.label}: ${selectedReason.summary}. Chat summary: ${recentContext || "Customer requested advisor help."}`;
+      const issueSummary = rawSummary.length > 1000 ? rawSummary.slice(0, 997) + "..." : rawSummary;
       const response = await fetchJson<BookingDetail>("/api/v1/booking/create", {
         method: "POST",
         body: JSON.stringify({
@@ -487,7 +489,7 @@ export function CustomerTab() {
           customer_email: contact.email.trim(),
           preferred_date: selectedSlot.date,
           preferred_time: selectedSlot.time,
-          issue_summary: `${selectedReason.label}: ${selectedReason.summary}. Chat summary: ${recentContext || "Customer requested advisor help."}`,
+          issue_summary: issueSummary,
           idempotency_key: localId(`booking-${selectedReason.id}`),
         }),
       });

@@ -51,7 +51,14 @@ async def _parse_booking_create_payload(request: Request) -> BookingCreateReques
     try:
         return BookingCreateRequest.model_validate(raw)
     except ValidationError as exc:
-        raise HTTPException(status_code=422, detail=exc.errors()) from exc
+        # Pydantic v2 errors include a `ctx` key that may hold the original
+        # exception object (e.g. ValueError), which is not JSON serializable.
+        # Strip to only the fields FastAPI's standard error shape needs.
+        safe_errors = [
+            {"type": e["type"], "loc": list(e["loc"]), "msg": e["msg"]}
+            for e in exc.errors()
+        ]
+        raise HTTPException(status_code=422, detail=safe_errors) from exc
 
 
 # ────────────────────────────────────────────────────────────────────

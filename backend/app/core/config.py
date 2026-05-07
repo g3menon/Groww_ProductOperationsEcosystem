@@ -14,6 +14,27 @@ def _split_origins(value: str) -> list[str]:
     return [p.strip() for p in value.split(",") if p.strip()]
 
 
+def normalize_google_oauth_scopes_value(v: object) -> str | None:
+    """Return a single space-delimited scope string for Google's OAuth ``scope`` param.
+
+    Google rejects ``invalid_scope`` if scopes are joined with commas, semicolons,
+    or literal ``%2C`` / ``%3B`` (common from copy-paste). RFC 6749 expects one ``scope``
+    parameter with space-separated values.
+    """
+    if v is None:
+        return None
+    s = str(v).strip()
+    if (len(s) >= 2 and s[0] == s[-1]) and s[0] in "\"'":
+        s = s[1:-1].strip()
+    if not s:
+        return None
+    s = s.replace("%2C", " ").replace("%2c", " ")
+    s = s.replace("%3B", " ").replace("%3b", " ")
+    s = s.replace(",", " ").replace(";", " ")
+    normalized = " ".join(part for part in s.split() if part.strip())
+    return normalized or None
+
+
 class Settings(BaseSettings):
     """App configuration. Secrets must never appear in logs or API responses (P1.4)."""
 
@@ -142,6 +163,12 @@ class Settings(BaseSettings):
         default=None,
         validation_alias=AliasChoices("GOOGLE_OAUTH_SCOPES"),
     )
+
+    @field_validator("google_oauth_scopes", mode="before")
+    @classmethod
+    def normalize_google_oauth_scopes(cls, v: object) -> str | None:
+        """Load ``GOOGLE_OAUTH_SCOPES`` as space-delimited scopes (see ``normalize_google_oauth_scopes_value``)."""
+        return normalize_google_oauth_scopes_value(v)
 
     # Phase 7: operational Google account identifiers
     google_authorized_email: str | None = Field(
