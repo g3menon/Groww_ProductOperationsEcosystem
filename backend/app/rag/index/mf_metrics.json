@@ -9,7 +9,6 @@
     "option": "Growth",
     "nav": 98.76,
     "nav_date": "2025-04-25",
-    "nav_source_url": null,
     "aum_cr": 12450.0,
     "expense_ratio_pct": 0.58,
     "exit_load_pct": 1.0,
@@ -27,34 +26,22 @@
       "one_year": 42.1,
       "three_year": 35.6,
       "five_year": 28.9,
-      "ten_year": null,
-      "all_time": null,
       "since_inception": null
     },
-    "investment_returns": [],
-    "returns_and_rankings": null,
     "top_holdings": [
       {
         "name": "Kalyan Jewellers",
-        "weight_pct": 9.8,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 9.8
       },
       {
         "name": "Coforge",
-        "weight_pct": 8.2,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 8.2
       },
       {
         "name": "Persistent Systems",
-        "weight_pct": 7.6,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 7.6
       }
     ],
-    "advanced_ratios": {},
-    "fund_managers": [],
     "sector_allocation": [
       {
         "sector": "Consumer Discretionary",
@@ -73,7 +60,9 @@
     "fund_objective": "Generate long-term capital appreciation by investing primarily in mid-cap stocks with strong earnings growth potential. The fund targets 25-30 high-conviction mid-cap companies using a bottom-up stock selection approach.",
     "source_url": "https://groww.in/mutual-funds/motilal-oswal-most-focused-midcap-30-fund-direct-growth",
     "scraped_at": "2026-04-29T00:00:00Z",
-    "last_checked": "2026-04-29"
+    "last_checked": "2026-04-29",
+    "fixture_only": true,
+    "fixture_note": "Static values for local testing. Live fields require JS rendering."
   },
   {
     "doc_id": "motilal-flexicap-direct",
@@ -85,7 +74,6 @@
     "option": "Growth",
     "nav": 52.34,
     "nav_date": "2025-04-25",
-    "nav_source_url": null,
     "aum_cr": 2845.0,
     "expense_ratio_pct": 0.64,
     "exit_load_pct": 1.0,
@@ -103,34 +91,22 @@
       "one_year": 29.6,
       "three_year": 21.4,
       "five_year": 17.8,
-      "ten_year": null,
-      "all_time": null,
       "since_inception": null
     },
-    "investment_returns": [],
-    "returns_and_rankings": null,
     "top_holdings": [
       {
         "name": "ICICI Bank",
-        "weight_pct": 8.5,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 8.5
       },
       {
         "name": "Infosys",
-        "weight_pct": 7.2,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 7.2
       },
       {
         "name": "HDFC Bank",
-        "weight_pct": 6.8,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 6.8
       }
     ],
-    "advanced_ratios": {},
-    "fund_managers": [],
     "sector_allocation": [
       {
         "sector": "Financial Services",
@@ -149,7 +125,9 @@
     "fund_objective": "Generate long-term capital appreciation through diversified equity investments across large-cap, mid-cap, and small-cap stocks, with flexibility to shift allocations based on prevailing valuations and opportunities.",
     "source_url": "https://groww.in/mutual-funds/motilal-oswal-most-focused-multicap-35-fund-direct-growth",
     "scraped_at": "2026-04-29T00:00:00Z",
-    "last_checked": "2026-04-29"
+    "last_checked": "2026-04-29",
+    "fixture_only": true,
+    "fixture_note": "Static values for local testing. Live fields require JS rendering."
   },
   {
     "doc_id": "motilal-midcap150-index",
@@ -161,7 +139,6 @@
     "option": "Growth",
     "nav": 24.18,
     "nav_date": "2025-04-25",
-    "nav_source_url": null,
     "aum_cr": 1920.0,
     "expense_ratio_pct": 0.2,
     "exit_load_pct": 0.1,
@@ -179,34 +156,22 @@
       "one_year": 39.5,
       "three_year": 32.8,
       "five_year": 26.4,
-      "ten_year": null,
-      "all_time": null,
       "since_inception": null
     },
-    "investment_returns": [],
-    "returns_and_rankings": null,
     "top_holdings": [
       {
         "name": "BSE Ltd",
-        "weight_pct": 9.1,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 9.1
       },
       {
         "name": "Kalyan Jewellers",
-        "weight_pct": 5.8,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 5.8
       },
       {
         "name": "Persistent Systems",
-        "weight_pct": 5.4,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 5.4
       }
     ],
-    "advanced_ratios": {},
-    "fund_managers": [],
     "sector_allocation": [
       {
         "sector": "Financial Services",
@@ -225,7 +190,9 @@
     "fund_objective": "Passively replicate the Nifty Midcap 150 Index by investing in its constituent stocks in the same proportion, providing low-cost exposure to the top 150 mid-cap companies on NSE by free-float market capitalisation.",
     "source_url": "https://groww.in/mutual-funds/motilal-oswal-nifty-midcap-150-index-fund-direct-growth",
     "scraped_at": "2026-04-29T00:00:00Z",
-    "last_checked": "2026-04-29"
+    "last_checked": "2026-04-29",
+    "fixture_only": true,
+    "fixture_note": "Static values for local testing. Live fields require JS rendering."
   },
   {
     "doc_id": "hdfc-large-midcap-direct",
@@ -237,7 +204,6 @@
     "option": "Growth",
     "nav": 102.45,
     "nav_date": "2025-04-25",
-    "nav_source_url": null,
     "aum_cr": 4823.0,
     "expense_ratio_pct": 0.82,
     "exit_load_pct": 1.0,
@@ -255,34 +221,22 @@
       "one_year": 28.4,
       "three_year": 22.1,
       "five_year": 18.6,
-      "ten_year": null,
-      "all_time": null,
       "since_inception": null
     },
-    "investment_returns": [],
-    "returns_and_rankings": null,
     "top_holdings": [
       {
         "name": "HDFC Bank",
-        "weight_pct": 7.2,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 7.2
       },
       {
         "name": "ICICI Bank",
-        "weight_pct": 5.8,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 5.8
       },
       {
         "name": "Infosys",
-        "weight_pct": 4.1,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 4.1
       }
     ],
-    "advanced_ratios": {},
-    "fund_managers": [],
     "sector_allocation": [
       {
         "sector": "Financial Services",
@@ -301,7 +255,9 @@
     "fund_objective": "Generate long-term capital appreciation by investing at least 35% each in large-cap and mid-cap stocks, combining the stability of large-cap companies with the growth potential of mid-cap companies.",
     "source_url": "https://groww.in/mutual-funds/hdfc-large-and-mid-cap-fund-direct-growth",
     "scraped_at": "2026-04-29T00:00:00Z",
-    "last_checked": "2026-04-29"
+    "last_checked": "2026-04-29",
+    "fixture_only": true,
+    "fixture_note": "Static values for local testing. Live fields require JS rendering."
   },
   {
     "doc_id": "hdfc-flexicap-direct",
@@ -313,7 +269,6 @@
     "option": "Growth",
     "nav": 1845.32,
     "nav_date": "2025-04-25",
-    "nav_source_url": null,
     "aum_cr": 62341.0,
     "expense_ratio_pct": 0.76,
     "exit_load_pct": 1.0,
@@ -331,34 +286,22 @@
       "one_year": 31.2,
       "three_year": 24.8,
       "five_year": 19.3,
-      "ten_year": null,
-      "all_time": null,
       "since_inception": null
     },
-    "investment_returns": [],
-    "returns_and_rankings": null,
     "top_holdings": [
       {
         "name": "ICICI Bank",
-        "weight_pct": 8.1,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 8.1
       },
       {
         "name": "Axis Bank",
-        "weight_pct": 5.3,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 5.3
       },
       {
         "name": "Reliance Industries",
-        "weight_pct": 4.9,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 4.9
       }
     ],
-    "advanced_ratios": {},
-    "fund_managers": [],
     "sector_allocation": [
       {
         "sector": "Financial Services",
@@ -377,7 +320,9 @@
     "fund_objective": "Generate long-term capital appreciation by investing across large-cap, mid-cap, and small-cap stocks based on market outlook and bottom-up stock selection, with a portfolio of 50-60 quality businesses at reasonable valuations.",
     "source_url": "https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth",
     "scraped_at": "2026-04-29T00:00:00Z",
-    "last_checked": "2026-04-29"
+    "last_checked": "2026-04-29",
+    "fixture_only": true,
+    "fixture_note": "Static values for local testing. Live fields require JS rendering."
   },
   {
     "doc_id": "hdfc-largecap-direct",
@@ -389,7 +334,6 @@
     "option": "Growth",
     "nav": 534.72,
     "nav_date": "2025-04-25",
-    "nav_source_url": null,
     "aum_cr": 28450.0,
     "expense_ratio_pct": 0.75,
     "exit_load_pct": 1.0,
@@ -407,34 +351,22 @@
       "one_year": 26.8,
       "three_year": 19.2,
       "five_year": 16.4,
-      "ten_year": null,
-      "all_time": null,
       "since_inception": null
     },
-    "investment_returns": [],
-    "returns_and_rankings": null,
     "top_holdings": [
       {
         "name": "HDFC Bank",
-        "weight_pct": 9.8,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 9.8
       },
       {
         "name": "ICICI Bank",
-        "weight_pct": 7.6,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 7.6
       },
       {
         "name": "Reliance Industries",
-        "weight_pct": 6.4,
-        "sector": null,
-        "instrument": null
+        "weight_pct": 6.4
       }
     ],
-    "advanced_ratios": {},
-    "fund_managers": [],
     "sector_allocation": [
       {
         "sector": "Financial Services",
@@ -453,6 +385,8 @@
     "fund_objective": "Generate long-term capital appreciation by investing at least 80% of assets in large-cap stocks (top 100 companies by market capitalisation), with a portfolio of 40-50 large-cap stocks selected for quality, earnings visibility, and reasonable valuations.",
     "source_url": "https://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth",
     "scraped_at": "2026-04-29T00:00:00Z",
-    "last_checked": "2026-04-29"
+    "last_checked": "2026-04-29",
+    "fixture_only": true,
+    "fixture_note": "Static values for local testing. Live fields require JS rendering."
   }
 ]
