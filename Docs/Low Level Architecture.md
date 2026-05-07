@@ -43,6 +43,8 @@ flowchart LR
 
 Frontend deploys via Vercel (Next.js). Backend deploys via Railway using the **root** `Dockerfile` and `railway.toml` (`uvicorn app.main:app --host 0.0.0.0 --port $PORT`). Persistent state lives in Supabase Postgres (schema in `infra/supabase/phase1_phase2_schema.sql`). External APIs are called only from the backend.
 
+**Production URLs (this deployment):** Frontend [https://groww-product-ops-ecosystem.vercel.app](https://groww-product-ops-ecosystem.vercel.app); API origin [https://loving-art-production-d433.up.railway.app](https://loving-art-production-d433.up.railway.app); Google OAuth redirect `https://loving-art-production-d433.up.railway.app/api/v1/auth/google/callback` (must match GCP and Railway `GOOGLE_REDIRECT_URI`). Full table and env checklist: [Docs/DeploymentGuide.md](DeploymentGuide.md).
+
 A legacy `backend/render.yaml` file may still exist from prior iterations but is **not** the active deploy config — see Architecture.md for the full “locked decisions”.
 
 ---
@@ -788,6 +790,7 @@ Each phase below uses the same fixed template. Cross-references point to single 
 ### 14.9 Phase 9 — Deployment (NEW)
 
 - **Goal:** production deployment of the locally-validated Phases 1–7 stack (Phase 8 optional), with hardened env, OAuth callbacks, CORS, scheduler, and incident playbook coverage. This phase introduces no new product behavior; it ports the locally-running app to Vercel + Railway + Supabase.
+- **Canonical production hosts:** Vercel dashboard at `https://groww-product-ops-ecosystem.vercel.app`; Railway API at `https://loving-art-production-d433.up.railway.app`; OAuth callback path `/api/v1/auth/google/callback` on that host (§2 above and [Docs/DeploymentGuide.md](DeploymentGuide.md)).
 - **Deployment artifacts:**
   - **Frontend:** Vercel deploy from `frontend/`. Production env vars: `NEXT_PUBLIC_API_BASE_URL` (deployed backend origin), and `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` only if frontend talks to Supabase directly (Architecture.md §Environment variables).
   - **Backend:** Railway deploy using root `Dockerfile` and `railway.toml`:

@@ -2,6 +2,14 @@
 
 **Product:** Groww (single-brand)
 **Report Date:** 2026-05-07
+**Project status:** All implementation phases (**1–9**) are complete; **live deployment is complete** (as of report date unless you revise the date below).
+
+**Production frontend (Vercel):** [https://groww-product-ops-ecosystem.vercel.app](https://groww-product-ops-ecosystem.vercel.app)
+
+**Production backend (Railway API origin):** [https://loving-art-production-d433.up.railway.app](https://loving-art-production-d433.up.railway.app)
+
+**Google OAuth redirect URI (must match GCP + `GOOGLE_REDIRECT_URI`):** `https://loving-art-production-d433.up.railway.app/api/v1/auth/google/callback` — not `.../api/v1/auth/callback` (see `backend/app/api/v1/auth.py`).
+
 **Acceptance policy:** Phases **6–9** manual acceptance notes are **superseded for this report** by the automated suites in [`phase6_checks.py`](backend/app/evals/phase6_checks.py)–[`phase9_checks.py`](backend/app/evals/phase9_checks.py). Those suites validate **API wiring, imports, voice surface, and deployment artifacts** — not live production smoke, OAuth consent in prod, or STT/TTS quality ([Docs/Low Level Architecture.md](Docs/Low%20Level%20Architecture.md) §14.9 operational checklist remains recommended).
 
 **Automated suite:** [`run_all.py`](backend/app/evals/run_all.py) supports **`--phase 1` … `--phase 9`** and **`--all`** (runs 1→9).
@@ -39,7 +47,7 @@ py -3.11 -m app.evals.run_all --all
 | Advisor HITL (Phase 6) | OpenAPI + pending/approve/upcoming + idempotent approve | **100 / 100** (automated) |
 | Integrations (Phase 7) | Scheduler route + Gmail/Calendar/Sheets modules + `run_approval_integrations` | **100 / 100** (automated; **no live Google API calls**) |
 | Voice (Phase 8) | Voice OpenAPI + marker route + safe empty POST + adapter import | **100 / 100** (automated; **no audio roundtrip**) |
-| Deployment readiness (Phase 9) | Dockerfile, `railway.toml`, weekly pulse workflow, Supabase baseline DDL, `frontend/package.json` | **100 / 100** (automated; **not** a deployed-environment proof) |
+| Deployment readiness (Phase 9) | Dockerfile, `railway.toml`, weekly pulse workflow, Supabase baseline DDL, `frontend/package.json` | **100 / 100** (automated repo gate); **live deployment complete** — §14.9 remains recommended for ongoing operational checks (smoke, OAuth in prod, STT/TTS) |
 | Retrieval accuracy — Golden Dataset | 5 complex MF + fee questions | **Faithfulness 5.0 / 5.0 · Relevance 5.0 / 5.0** (§2) |
 | Constraint adherence — Adversarial Tests | 3 adversarial prompts | **3 / 3 refused — 100%** (§3) |
 | Tone and structure — UX Eval | Weekly Pulse + Voice Agent + fee explainer rubric | **PASS** (§4) |
@@ -451,7 +459,20 @@ All rows reflect the **`2026-05-07`** `py -3.11 -m app.evals.run_all --all` run.
 | Phase 6 | Advisor HITL approval | Automated (structural + smoke) | **100 / 100** |
 | Phase 7 | External integrations | Automated (offline imports + scheduler route) | **100 / 100** |
 | Phase 8 | Voice adapter | Automated (API surface; no STT/TTS audio eval) | **100 / 100** |
-| Phase 9 | Deployment readiness | Automated (repo artifact gate; not prod smoke) | **100 / 100** |
+| Phase 9 | Deployment readiness | Automated (repo artifact gate); **deployed live** — prod smoke/OAuth/STT/TTS per runbook §14.9 remains **ongoing** ops hygiene | **100 / 100** |
+
+---
+
+## Post-deploy validation (production)
+
+Canonical **production frontend:** [https://groww-product-ops-ecosystem.vercel.app](https://groww-product-ops-ecosystem.vercel.app)
+
+| Check | Result | Notes |
+|---|---|---|
+| Frontend HTTPS / app shell | **PASS** | Verified **2026-05-07**: root URL serves the Groww Ops AI experience (hero, suggested prompts, MF overview cards, chat/voice affordances). |
+| Backend `GET /api/v1/health` | **PASS** | Verified **2026-05-07** against `https://loving-art-production-d433.up.railway.app/api/v1/health` (`success: true`, `status: ok`, Supabase reachable). |
+| Env alignment | — | Vercel `NEXT_PUBLIC_API_BASE_URL`, Railway `FRONTEND_BASE_URL`, GitHub `RAILWAY_API_URL`, and GCP **`/api/v1/auth/google/callback`** must all use the origins above (see [Docs/DeploymentGuide.md](Docs/DeploymentGuide.md)). |
+| OAuth / Google integrations / STT–TTS | — | Still **manual** per §14.9 and §6 below; not covered by this report’s automated suites. |
 
 ---
 
@@ -459,7 +480,7 @@ All rows reflect the **`2026-05-07`** `py -3.11 -m app.evals.run_all --all` run.
 
 | Item | Severity | Description |
 |---|---|---|
-| Phase 9 — live production | Medium | Automated Phase 9 checks **files only**. Follow §14.9 for deployed smoke tests, OAuth callbacks on real origins, incident playbook exercises, and rollback rehearsal — still recommended before declaring production “done.” |
+| Phase 9 — ongoing production operations | Low (was pre-deploy Medium) | **Deployment is complete.** Automated Phase 9 still validates **repository artifacts only**. §14.9 (deployed smoke tests, OAuth on real origins, incident/rollback drills) is **ongoing operational hygiene**, not a blocker for this eval report. |
 | Phase 8 — voice quality / parity | Medium | No automated eval for transcript accuracy, accent robustness, or text↔voice parity beyond route wiring; exercise `Docs/Runbook.md` / manual calls with real audio when needed. |
 | Phase 7 — live Google APIs | Medium | Imports and scheduler refuse-path only; OAuth flows and quota errors require staging or manual validation. |
 | Phase 7 — integration outcome visibility | Low | Skip/failure remains primarily **logged**, not always on approval API responses. |

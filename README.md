@@ -8,6 +8,17 @@ Single-repo dashboard (Next.js + FastAPI + Supabase) for **Groww** product opera
 - **Ops:** `Docs/Runbook.md`  
 - **Full E2E without voice:** use **End-to-end test (text-only, before voice / Phase 8)** in the runbook before depending on STT/TTS.
 
+### Production (hosted)
+
+| Surface | URL |
+| --- | --- |
+| Dashboard (Vercel) | [groww-product-ops-ecosystem.vercel.app](https://groww-product-ops-ecosystem.vercel.app) |
+| API origin (Railway) | [loving-art-production-d433.up.railway.app](https://loving-art-production-d433.up.railway.app) |
+| Health | [GET /api/v1/health](https://loving-art-production-d433.up.railway.app/api/v1/health) |
+| Google OAuth redirect (`GOOGLE_REDIRECT_URI` + GCP) | `https://loving-art-production-d433.up.railway.app/api/v1/auth/google/callback` |
+
+Operational detail: [Docs/DeploymentGuide.md](Docs/DeploymentGuide.md). Eval snapshot: [Evals.md](Evals.md).
+
 ### RAG + MF metrics index (Phase 4)
 
 Full BM25/embedding retrieval and structured MF answers need on-disk indexes generated from the fixture corpus (or a live scrape). **Run this once per clone** (or after changing sources):

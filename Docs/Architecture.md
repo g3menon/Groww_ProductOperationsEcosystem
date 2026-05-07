@@ -41,6 +41,8 @@ The dashboard should support:
 - Frontend: **Next.js + TypeScript + Tailwind + shadcn/ui**
 - Backend: **FastAPI (Python)**
 - Frontend deployment: **Vercel**
+- **Production frontend URL:** [https://groww-product-ops-ecosystem.vercel.app](https://groww-product-ops-ecosystem.vercel.app)
+- **Production backend URL (Railway):** [https://loving-art-production-d433.up.railway.app](https://loving-art-production-d433.up.railway.app) — Google OAuth redirect: `/api/v1/auth/google/callback`
 - Backend deployment: **Railway** (FastAPI container; see `railway.toml` + root `Dockerfile`)
 - Primary database / source of truth: **Supabase Postgres**
 - Google auth model: **Google OAuth only**

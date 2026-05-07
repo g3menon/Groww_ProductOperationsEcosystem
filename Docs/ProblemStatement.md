@@ -76,7 +76,7 @@ Run and document **at least three** evaluation types on the final system.
 
 ## 4. Technical constraints
 
-- **Single entry point:** the integrated Groww dashboard (Next.js on Vercel + FastAPI backend) where users access the three role surfaces (Customer / Product / Advisor) and the workflows are orchestrated by the backend.
+- **Single entry point:** the integrated Groww dashboard (Next.js on Vercel + FastAPI backend) where users access the three role surfaces (Customer / Product / Advisor) and the workflows are orchestrated by the backend. **Production dashboard:** https://groww-product-ops-ecosystem.vercel.app (backend API origin: https://loving-art-production-d433.up.railway.app).
 - **No PII:** Continue masking sensitive data. Use `[REDACTED]` for simulated user names.
 - **State persistence:** The **Booking Code** (M3) must be visible in the **Notes/Doc** (M2) to show the systems are connected.
 
@@ -90,7 +90,7 @@ Run and document **at least three** evaluation types on the final system.
   - A voice call booked using that pulse context.
   - The Smart-Sync FAQ answering a complex fee + fact question.
 - **Evals report:** Markdown or table with golden dataset, adversarial tests, and scores.
-- **Source manifest:** Combined list of all **30+** official URLs used across the bootcamp.
+- **Source manifest:** Combined list of all official URLs used across the bootcamp (see `Deliverables/Resources.md` — **35** HTTPS rows including production Vercel/Railway/OAuth URLs).
 
 ---
 

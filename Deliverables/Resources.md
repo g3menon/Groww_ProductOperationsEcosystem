@@ -140,11 +140,17 @@ Documented topology: Vercel (frontend), Railway (backend), Supabase (database). 
 - Railway: [https://docs.railway.app](https://docs.railway.app)
 - Supabase: [https://supabase.com/docs](https://supabase.com/docs)
 
+**This project’s production deployments (canonical):**
+
+- Frontend (Vercel): `https://groww-product-ops-ecosystem.vercel.app`
+- Backend API (Railway): `https://loving-art-production-d433.up.railway.app`
+- Google OAuth redirect (GCP authorized URI + `GOOGLE_REDIRECT_URI`): `https://loving-art-production-d433.up.railway.app/api/v1/auth/google/callback`
+
 ---
 
-## Plain-text URL inventory (30+ distinct HTTPS destinations)
+## Plain-text URL inventory (35 distinct HTTPS destinations)
 
-Use this checklist for capstone “source manifest” completeness. *Groww fund URLs count once each even if referenced in manifest + fixture + tests.*
+Use this checklist for capstone “source manifest” completeness. *Groww fund URLs count once each even if referenced in manifest + fixture + tests.* Production deploy URLs (**33–35**) are canonical for Phase 9; keep them synced with Railway/Vercel if the project moves.
 
 1. `https://play.google.com/store/apps/details?id=com.nextbillion.groww&hl=en_IN`
 2. `https://groww.in/` (Referer only)
@@ -178,5 +184,8 @@ Use this checklist for capstone “source manifest” completeness. *Groww fund 
 30. `https://vercel.com/docs` (frontend hosting — `Docs/Low Level Architecture.md` §14.9)
 31. `https://docs.railway.app` (backend hosting — root `railway.toml`)
 32. `https://supabase.com/docs` (managed Postgres / client — infra migrations under `infra/supabase/`)
+33. `https://groww-product-ops-ecosystem.vercel.app` (production Next.js dashboard — Phase 9)
+34. `https://loving-art-production-d433.up.railway.app` (production FastAPI origin — Phase 9)
+35. `https://loving-art-production-d433.up.railway.app/api/v1/auth/google/callback` (production OAuth redirect — Phase 7/9)
 
 **Excluded by design from this inventory:** `http://localhost:*`, `http://127.0.0.1:*`, docker internal hosts, and placeholder eval URLs such as `https://example.supabase.co` (see `backend/app/evals/run_all.py`).

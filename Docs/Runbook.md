@@ -11,8 +11,8 @@ Use it during:
 
 ## System map
 
-- **Frontend:** Next.js on Vercel
-- **Backend:** FastAPI on Railway
+- **Frontend:** Next.js on Vercel ([production dashboard](https://groww-product-ops-ecosystem.vercel.app))
+- **Backend:** FastAPI on Railway ([production API origin](https://loving-art-production-d433.up.railway.app))
 - **Database:** Supabase
 - **LLM providers:** Gemini (**`gemini-2.5-flash`** by default) and Groq, each with **primary + fallback** API keys (`Docs/Architecture.md`)
 - **Canonical Groww URLs & Playwright rules:** `Deliverables/Resources.md`
@@ -176,12 +176,21 @@ Use this when refreshing **Weekly Pulse** inputs or **RAG** MF/fee indexes.
    - Run pulse generation only after the full chain succeeded for the intended window, following the canonical pipeline order in `Deliverables/Resources.md` (**Weekly Pulse from Play Store (order)**). Or explicitly accept an **empty-ingestion** degraded mode documented in logs.
 
 ### Production
-1. Confirm Railway env vars are correct.
-2. Confirm Vercel env vars are correct.
+
+Canonical URLs (same as `Docs/DeploymentGuide.md` *Production URLs*):
+
+- Frontend: `https://groww-product-ops-ecosystem.vercel.app`
+- Backend: `https://loving-art-production-d433.up.railway.app`
+- OAuth redirect (GCP + `GOOGLE_REDIRECT_URI`): `https://loving-art-production-d433.up.railway.app/api/v1/auth/google/callback` (path includes **`/google/`**)
+
+Steps:
+
+1. Confirm Railway env vars are correct (`API_BASE_URL`, `FRONTEND_BASE_URL`, `GOOGLE_REDIRECT_URI`, secrets — see Deployment Guide).
+2. Confirm Vercel env vars are correct (`NEXT_PUBLIC_API_BASE_URL` = Railway origin above, no trailing slash).
 3. Deploy backend.
-4. Verify health endpoint.
-5. Deploy frontend.
-6. Verify dashboard load and API connectivity.
+4. Verify `GET https://loving-art-production-d433.up.railway.app/api/v1/health`.
+5. Deploy frontend (redeploy if env changed so the bundle picks up `NEXT_PUBLIC_*`).
+6. Verify dashboard load and API connectivity from the browser.
 
 ## Smoke test checklist
 

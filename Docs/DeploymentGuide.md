@@ -18,6 +18,19 @@ This guide walks through deploying the full stack: **Supabase** (database) → *
 
 ---
 
+## Production URLs (reference)
+
+| Surface | URL |
+|---------|-----|
+| Frontend (Vercel) | [https://groww-product-ops-ecosystem.vercel.app](https://groww-product-ops-ecosystem.vercel.app) |
+| Backend (Railway API origin) | [https://loving-art-production-d433.up.railway.app](https://loving-art-production-d433.up.railway.app) |
+| Health | [https://loving-art-production-d433.up.railway.app/api/v1/health](https://loving-art-production-d433.up.railway.app/api/v1/health) |
+| Google OAuth redirect (`GOOGLE_REDIRECT_URI` + GCP “Authorized redirect URI”) | `https://loving-art-production-d433.up.railway.app/api/v1/auth/google/callback` |
+
+> **OAuth path:** Use **`/api/v1/auth/google/callback`**, not `.../api/v1/auth/callback`. The mounted route is `GET /api/v1/auth/google/callback` in `backend/app/api/v1/auth.py`.
+
+---
+
 ## Step 1 — Supabase (Database)
 
 ### 1.1 Create a Supabase Project
@@ -68,8 +81,8 @@ In the Railway service **Variables** panel, add all the following:
 |----------|----------|-------------|
 | `APP_ENV` | Yes | Set to `production` |
 | `LOG_LEVEL` | No | `info` (default); use `warning` in prod for quieter logs |
-| `API_BASE_URL` | Yes | Your Railway public URL, e.g. `https://xxx.railway.app` |
-| `FRONTEND_BASE_URL` | Yes | Your Vercel frontend URL, e.g. `https://your-app.vercel.app`. Must be exact origin (no trailing slash). Used for CORS allowlist. |
+| `API_BASE_URL` | Yes | Your Railway public URL, e.g. `https://loving-art-production-d433.up.railway.app` |
+| `FRONTEND_BASE_URL` | Yes | Your Vercel frontend URL, e.g. `https://groww-product-ops-ecosystem.vercel.app`. Must be exact origin (no trailing slash). Used for CORS allowlist. |
 | `SUPABASE_URL` | Yes | From Step 1.3 |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | From Step 1.3 — **backend-only; never expose to frontend** |
 | `SUPABASE_ANON_KEY` | No | Only needed if backend uses anon client |
@@ -81,7 +94,7 @@ In the Railway service **Variables** panel, add all the following:
 | `GOOGLE_PROJECT_ID` | Yes (Phase 7+) | GCP project ID that owns the OAuth credentials |
 | `GOOGLE_CLIENT_ID` | Yes (Phase 7+) | OAuth 2.0 client ID from Google Cloud Console |
 | `GOOGLE_CLIENT_SECRET` | Yes (Phase 7+) | OAuth 2.0 client secret — **backend-only; never expose** |
-| `GOOGLE_REDIRECT_URI` | Yes (Phase 7+) | Must match the authorized redirect URI registered in GCP, e.g. `https://xxx.railway.app/api/v1/auth/google/callback` |
+| `GOOGLE_REDIRECT_URI` | Yes (Phase 7+) | Must match the authorized redirect URI registered in GCP, e.g. `https://loving-art-production-d433.up.railway.app/api/v1/auth/google/callback` |
 | `GOOGLE_OAUTH_SCOPES` | Yes (Phase 7+) | Space-separated scopes: `openid email profile https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/spreadsheets` |
 | `GOOGLE_AUTHORIZED_EMAIL` | Yes (Phase 7+) | The Google account email that will be used for Gmail/Calendar/Sheets actions |
 | `GMAIL_SENDER_EMAIL` | Yes (Phase 7+) | Email address to send pulse and confirmation emails from (usually same as `GOOGLE_AUTHORIZED_EMAIL`) |
@@ -97,7 +110,7 @@ In the Railway service **Variables** panel, add all the following:
 
 After Railway builds and deploys:
 
-1. Visit `https://xxx.railway.app/api/v1/health` — should return `{"success": true, "data": {"status": "ok", ...}}`.
+1. Visit `https://loving-art-production-d433.up.railway.app/api/v1/health` — should return `{"success": true, "data": {"status": "ok", ...}}`.
 2. Note the Railway public URL — you will need it for Vercel and GitHub Secrets.
 
 ---
@@ -118,7 +131,7 @@ In the Vercel project **Settings → Environment Variables**, add:
 
 | Variable | Value | Environments |
 |----------|-------|--------------|
-| `NEXT_PUBLIC_API_BASE_URL` | `https://xxx.railway.app` (your Railway URL, no trailing slash, no `/api/v1` suffix) | Production, Preview, Development |
+| `NEXT_PUBLIC_API_BASE_URL` | `https://loving-art-production-d433.up.railway.app` (your Railway URL, no trailing slash, no `/api/v1` suffix) | Production, Preview, Development |
 
 No other environment variables are required for the frontend — all business logic runs in the FastAPI backend.
 
@@ -134,7 +147,7 @@ In the GitHub repository: **Settings → Secrets and variables → Actions**, ad
 
 | Secret Name | Value | Used By |
 |-------------|-------|---------|
-| `RAILWAY_API_URL` | Your Railway backend URL, e.g. `https://xxx.railway.app` | `weekly-pulse.yml` — the POST target |
+| `RAILWAY_API_URL` | Your Railway backend URL, e.g. `https://loving-art-production-d433.up.railway.app` | `weekly-pulse.yml` — the POST target |
 | `INTERNAL_SCHEDULER_SECRET` | Same value as `SCHEDULER_SHARED_SECRET` on Railway | `weekly-pulse.yml` — authenticates the cron request |
 
 > **Secret alignment:** `INTERNAL_SCHEDULER_SECRET` (GitHub) and `SCHEDULER_SHARED_SECRET` (Railway env var) must have **identical values**. The backend's `/api/v1/internal/scheduler/pulse` endpoint validates the `X-Scheduler-Secret` header against `SCHEDULER_SHARED_SECRET`.
@@ -158,7 +171,7 @@ In the GitHub repository: **Settings → Secrets and variables → Actions**, ad
 1. Go to **APIs & Services → Credentials → Create Credentials → OAuth client ID**.
 2. Application type: **Web application**.
 3. Add the following **Authorized redirect URIs**:
-   - `https://xxx.railway.app/api/v1/auth/google/callback` (production)
+   - `https://loving-art-production-d433.up.railway.app/api/v1/auth/google/callback` (production)
    - `http://localhost:8000/api/v1/auth/google/callback` (local dev)
 4. Click **Create** and note down:
    - **Client ID** → `GOOGLE_CLIENT_ID`
@@ -178,7 +191,7 @@ In the GitHub repository: **Settings → Secrets and variables → Actions**, ad
 
 ### 5.4 Authorize the Google Account
 
-1. Visit `https://xxx.railway.app/api/v1/auth/google/login` in a browser.
+1. Visit `https://loving-art-production-d433.up.railway.app/api/v1/auth/google/login` in a browser.
 2. Complete the Google sign-in flow with the operational Google account (the one in `GOOGLE_AUTHORIZED_EMAIL`).
 3. After the callback, the backend stores the refresh token in Supabase (`google_oauth_tokens` table).
 4. Verify with `GET /api/v1/auth/google/refresh` — should return a valid access token.
@@ -191,19 +204,19 @@ Run these checks after full deployment to verify the stack is healthy:
 
 ### Health Endpoint
 ```bash
-curl https://xxx.railway.app/api/v1/health
+curl https://loving-art-production-d433.up.railway.app/api/v1/health
 # Expected: {"success": true, "data": {"status": "ok", "supabase": {"reachable": true, ...}}}
 ```
 
 ### Dashboard Load
-Open `https://your-app.vercel.app` in a browser. Verify:
+Open `https://groww-product-ops-ecosystem.vercel.app` in a browser (production). Verify:
 - Dashboard shell renders with 3 tabs (Customer, Product, Advisor)
 - Status badges load (may show "Data connection pending" if Supabase is not yet fully configured)
 - No browser console errors about `NEXT_PUBLIC_API_BASE_URL`
 
 ### Weekly Pulse Manual Trigger
 ```bash
-curl -X POST https://xxx.railway.app/api/v1/internal/scheduler/pulse \
+curl -X POST https://loving-art-production-d433.up.railway.app/api/v1/internal/scheduler/pulse \
   -H "X-Scheduler-Secret: YOUR_SCHEDULER_SHARED_SECRET" \
   -H "Content-Type: application/json"
 # Expected: 200 or 202 with pulse run details
@@ -212,13 +225,13 @@ curl -X POST https://xxx.railway.app/api/v1/internal/scheduler/pulse \
 Alternatively, trigger from GitHub: **Actions → Weekly Pulse Scheduler → Run workflow**.
 
 ### OAuth Callback Test
-1. Visit `https://xxx.railway.app/api/v1/auth/google/login`
+1. Visit `https://loving-art-production-d433.up.railway.app/api/v1/auth/google/login`
 2. Complete Google sign-in
 3. Verify redirect to callback succeeds and tokens are stored
 
 ### Badge Endpoint
 ```bash
-curl https://xxx.railway.app/api/v1/dashboard/badges
+curl https://loving-art-production-d433.up.railway.app/api/v1/dashboard/badges
 # Expected: {"success": true, "data": {"customer": {...}, "product": {...}, "advisor": {...}}}
 ```
 
@@ -259,7 +272,11 @@ Supabase does not have one-click schema rollback. To revert a schema migration:
 
 ### Issue: Google OAuth callback returns "redirect_uri_mismatch"
 **Cause:** The `GOOGLE_REDIRECT_URI` env var on Railway does not exactly match the Authorized redirect URI registered in Google Cloud Console.  
-**Fix:** Check both values — they must be character-for-character identical (including `https://` and no trailing slash).
+**Fix:** Check both values — they must be character-for-character identical (including `https://` and no trailing slash). The path must be **`/api/v1/auth/google/callback`**, not `/api/v1/auth/callback`.
+
+### Issue: Health response shows `settings.api_base_url` as `http://127.0.0.1:8000` in production
+**Cause:** Railway `API_BASE_URL` is missing or still reflects the local default.  
+**Fix:** Set `API_BASE_URL` to the public Railway origin, e.g. `https://loving-art-production-d433.up.railway.app` (no trailing slash), then redeploy.
 
 ### Issue: Gmail send fails with "invalid_grant"
 **Cause:** The stored refresh token has expired or been revoked (Google revokes tokens after ~6 months of inactivity, or if the OAuth consent screen is in "Testing" mode for >7 days).  
